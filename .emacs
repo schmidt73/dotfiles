@@ -5,6 +5,9 @@
 
 ; EVIL Configuration
 
+(require 'evil)
+(evil-mode 1)
+
 (define-key evil-normal-state-map (kbd "C-u") 'evil-scroll-up)
 (define-key evil-visual-state-map (kbd "C-u") 'evil-scroll-up)
 (define-key evil-insert-state-map (kbd "C-u")
@@ -12,12 +15,10 @@
     (interactive)
     (evil-delete (point-at-bol) (point))))
 
-(require 'evil)
-(evil-mode 1)
-
 ; General CONFIG
 
 (global-linum-mode t) ; line numbers
+(setq linum-format "%4d | ")
 
 (setq tab-width 4) ; or any other preferred value
 (setq-default indent-tabs-mode nil) ; indent spaces
