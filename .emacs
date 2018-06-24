@@ -12,7 +12,6 @@
 (package-initialize)
 
 ; Packages
-
 (setq package-list
   '(evil
     undo-tree))
@@ -24,7 +23,7 @@
   (unless (package-installed-p package)
     (package-install package)))
 
-; (add-to-list 'load-path "~/altprojects/llvm/src_root/utils/emacs") 
+(add-to-list 'load-path "~/altprojects/llvm/src_root/utils/emacs") 
 
 ; EVIL Configuration
 (require 'evil)
@@ -43,7 +42,52 @@
 ; 
 ; (add-to-list 'auto-mode-alist '("\\.ir\\'" . llvm-mode))
 ; (add-to-list 'auto-mode-alist '("\\.td\\'" . tablegen-mode))
- 
+
+; GIT/SVN/ETC Project Functions
+
+(setq project-file-extensions
+     '("*.c" "*.cc" "*.class" "*.clj" "*.cpp" "*.cs" "*.cxx" "*.el" 
+       "*.go" "*.h" "*.java" "*.lua" "*.m" "*.m4" "*.pl" "*.po" "*.py"
+       "*.rb" "*.sh" "*.sh" "*.swift" "*.vb" "*.vcxproj" "*.xcodeproj" "*.xml"
+       "*.td" "*.inc" "*.make" "*.txt" "*.md" "*.tex" "*.ir" "*.s" "*.TXT"))
+
+(grep-compute-defaults) ; Need this or rgrep don't work
+
+(defun find-project-root (file &optional default)
+  "Finds the nearest git root of file, returning default if none is found."
+  (let*
+      ((search-pred
+        (lambda (dir) (member ".git" (directory-files dir))))
+       (proot (locate-dominating-file file search-pred)))
+    (if proot proot default)))
+
+(defun project-find-name-file ()
+  "Searches for a file in the current project using a wildcard. 
+The current project is either the nearest root project directory 
+or current directory if none is found."
+  (interactive)
+  (let* ((root (find-project-root default-directory default-directory))
+         (query (read-string (format "Query (in %s): " root))))
+    (find-name-dired root query)))
+
+(defun project-rgrep ()
+  " Searches for a file in current project using a regexp."
+  (interactive)
+  (let* ((root (find-project-root default-directory default-directory))
+         (regexp (read-string (format "Regex (in %s): " root))))
+    (rgrep regexp (mapconcat 'identity project-file-extensions " ") root)))
+
+(defun project-cycle-file ()
+  " Cycles through files with same name but different extensions "
+  (interactive)
+  (let* ((fname (file-name-sans-extension (buffer-file-name)))
+         (fnames (mapcar (lambda (ext) (concat fname ext)) project-file-extensions)))
+    (message "%s" fnames)))
+    
+
+(define-key ctl-x-map (kbd "p f") 'project-find-name-file)
+(define-key ctl-x-map (kbd "p g") 'project-rgrep)
+
 ; General CONFIG
 (global-linum-mode 1) ; line numbers
 
