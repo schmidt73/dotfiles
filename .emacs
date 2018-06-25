@@ -14,7 +14,9 @@
 ; Packages
 (setq package-list
   '(evil
-    undo-tree))
+    undo-tree
+    magit
+    dracula-theme))
 
 (unless package-archive-contents
   (package-refresh-contents))
@@ -23,7 +25,7 @@
   (unless (package-installed-p package)
     (package-install package)))
 
-(add-to-list 'load-path "~/altprojects/llvm/src_root/utils/emacs") 
+; (add-to-list 'load-path "~/altprojects/llvm/src_root/utils/emacs") 
 
 ; EVIL Configuration
 (require 'evil)
@@ -39,7 +41,7 @@
 ; LLVM Stuff
 ; (require 'llvm-mode)
 ; (require 'tablegen-mode)
-; 
+
 ; (add-to-list 'auto-mode-alist '("\\.ir\\'" . llvm-mode))
 ; (add-to-list 'auto-mode-alist '("\\.td\\'" . tablegen-mode))
 
@@ -84,9 +86,12 @@ or current directory if none is found."
          (fnames (mapcar (lambda (ext) (concat fname ext)) project-file-extensions)))
     (message "%s" fnames)))
     
-
 (define-key ctl-x-map (kbd "p f") 'project-find-name-file)
 (define-key ctl-x-map (kbd "p g") 'project-rgrep)
+
+;Theme Settings
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
+(load-theme 'dracula t)
 
 ; General CONFIG
 (global-linum-mode 1) ; line numbers
@@ -110,3 +115,15 @@ or current directory if none is found."
       (display-buffer buffer not-this-window frame))))
 
 (setq display-buffer-function 'display-on-side)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages (quote (dracula-theme magit evil))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
