@@ -14,8 +14,17 @@
 ; Packages
 (setq package-list
   '(evil
+    clj-refactor
     undo-tree
+    company
+    org
     magit
+    cider
+    web-mode
+    helm
+    oceanic-theme
+    nord-theme
+    ediprolog
     dracula-theme))
 
 (unless package-archive-contents
@@ -25,7 +34,51 @@
   (unless (package-installed-p package)
     (package-install package)))
 
-; (add-to-list 'load-path "~/altprojects/llvm/src_root/utils/emacs") 
+; Helper Functions
+
+(defun find-buffer-containing-name (name)
+  (let ((pred
+         (lambda (buf)
+            (string-match-p (regexp-quote name) (buffer-name buf)))))
+    (car (seq-filter pred (buffer-list)))))
+
+; HELM settings
+
+(require 'helm-config)
+
+; Website Specific Configuration
+(defun nrepl-refresh ()
+  (interactive)
+  (let ((old-buf (current-buffer))
+        (cider-buf (find-buffer-containing-name "*cider-repl")))
+    (set-buffer cider-buf)
+    (goto-char (point-max))
+    (insert "(clojure.tools.namespace.repl/refresh)")
+    (cider-repl-return)
+    (set-buffer old-buf)
+    (message "Refreshed REPL.")))
+
+(defun nrepl-reset ()
+  (interactive)
+  (let ((old-buf (current-buffer))
+        (cider-buf (find-buffer-containing-name "*cider-repl")))
+    (set-buffer cider-buf)
+    (goto-char (point-max))
+    (insert "(user/reset)")
+    (cider-repl-return)
+    (set-buffer old-buf)
+    (message "Reset REPL.")))
+
+; CIDER Configuration
+
+(require 'cider)
+
+(add-to-list 'exec-path "C:\\Program Files\\Lein")
+(define-key cider-mode-map (kbd "C-c C-r") 'nrepl-reset)
+
+; COMPANY Configuration
+(add-hook 'after-init-hook 'global-company-mode)
+(global-set-key (kbd "TAB") #'company-indent-or-complete-common)
 
 ; EVIL Configuration
 (require 'evil)
@@ -38,63 +91,66 @@
 (define-key evil-visual-state-map (kbd "C-v") nil)
 (define-key evil-motion-state-map "\C-v" nil)
 
-; LLVM Stuff
-; (require 'llvm-mode)
-; (require 'tablegen-mode)
+; If you enter a mode whose name is in this 'evil-emacs-states-modes,
+; Evil will toggle to Emacs state automatically.
+(add-to-list 'evil-emacs-state-modes 'cider-stacktrace-mode)
 
-; (add-to-list 'auto-mode-alist '("\\.ir\\'" . llvm-mode))
-; (add-to-list 'auto-mode-alist '("\\.td\\'" . tablegen-mode))
+; Ensure we start in emacs state in these modes
+(add-hook 'cider-popup-buffer-mode-hook 'evil-emacs-state)
+(add-hook 'cider-repl-mode-hook 'evil-emacs-state)
+(add-hook 'dired-mode-hook 'evil-emacs-state)
+(add-hook 'cider-test-report-mode-hook 'evil-emacs-state)
 
-; GIT/SVN/ETC Project Functions
+(defun disable-evil-auto-indent ()
+  (make-variable-buffer-local 'evil-auto-indent)
+  (setq evil-auto-indent nil))
 
-(setq project-file-extensions
-     '("*.c" "*.cc" "*.class" "*.clj" "*.cpp" "*.cs" "*.cxx" "*.el" 
-       "*.go" "*.h" "*.java" "*.lua" "*.m" "*.m4" "*.pl" "*.po" "*.py"
-       "*.rb" "*.sh" "*.sh" "*.swift" "*.vb" "*.vcxproj" "*.xcodeproj" "*.xml"
-       "*.td" "*.inc" "*.make" "*.txt" "*.md" "*.tex" "*.ir" "*.s" "*.TXT"))
+(add-hook 'org-mode-hook 'disable-evil-auto-indent)
+(add-hook 'org-mode-hook 'evil-emacs-state)
 
-(grep-compute-defaults) ; Need this or rgrep don't work
+; Prolog CONFIG
+(add-to-list 'auto-mode-alist '("\\.pl$" . prolog-mode))
+(add-hook 'prolog-inferior-mode-hook 'evil-emacs-state)
 
-(defun find-project-root (file &optional default)
-  "Finds the nearest git root of file, returning default if none is found."
-  (let*
-      ((search-pred
-        (lambda (dir) (member ".git" (directory-files dir))))
-       (proot (locate-dominating-file file search-pred)))
-    (if proot proot default)))
+; Clojure CONFIG
+(setq clojure-indent-style :always-indent)
 
-(defun project-find-name-file ()
-  "Searches for a file in the current project using a wildcard. 
-The current project is either the nearest root project directory 
-or current directory if none is found."
-  (interactive)
-  (let* ((root (find-project-root default-directory default-directory))
-         (query (read-string (format "Query (in %s): " root))))
-    (find-name-dired root query)))
+(setq-default electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
+(electric-pair-mode)
 
-(defun project-rgrep ()
-  " Searches for a file in current project using a regexp."
-  (interactive)
-  (let* ((root (find-project-root default-directory default-directory))
-         (regexp (read-string (format "Regex (in %s): " root))))
-    (rgrep regexp (mapconcat 'identity project-file-extensions " ") root)))
+; ORG Mode
+(require 'org)
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-ca" 'org-agenda)
+(setq org-log-done t)
 
-(defun project-cycle-file ()
-  " Cycles through files with same name but different extensions "
-  (interactive)
-  (let* ((fname (file-name-sans-extension (buffer-file-name)))
-         (fnames (mapcar (lambda (ext) (concat fname ext)) project-file-extensions)))
-    (message "%s" fnames)))
-    
-(define-key ctl-x-map (kbd "p f") 'project-find-name-file)
-(define-key ctl-x-map (kbd "p g") 'project-rgrep)
+; WEB Mode
+(defun my-web-mode-hook ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-enable-auto-pairing t))
 
-;Theme Settings
+(add-hook 'web-mode-hook  'my-web-mode-hook)
+
+; Theme Settings
 (add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
-(load-theme 'dracula t)
 
 ; General CONFIG
+
+(eval-after-load "dired"
+  '(progn
+     (define-key dired-mode-map "f" 'my-dired-find-file)
+     (defun my-dired-find-file (&optional arg)
+       "Open each of the marked files, or the file under the point, or when prefix arg, the next N files "
+       (interactive "P")
+       (let* ((fn-list (dired-get-marked-files nil arg)))
+         (mapc 'find-file fn-list)))))
+
+(setq backup-directory-alist `(("." . "~/.saves")))
+(setq backup-by-copying t)
+
 (global-linum-mode 1) ; line numbers
+(scroll-bar-mode -1) ; remove scroll bar
 
 (add-hook 'shell-mode-hook (lambda () (linum-mode -1)))
 (add-hook 'eshell-mode-hook (lambda () (linum-mode -1)))
@@ -104,26 +160,31 @@ or current directory if none is found."
 (setq tab-width 4) ; or any other preferred value
 (setq-default indent-tabs-mode nil) ; indent spaces
 
-(defun display-on-side (buffer &optional not-this-window frame)
-  (let* ((window (or (minibuffer-selected-window)
-                     (selected-window)))
-         (display-buffer-function nil)
-         (pop-up-windows nil))
-    (with-selected-window (or window (error "display-on-side"))
-      (when (one-window-p t)
-        (split-window-horizontally))
-      (display-buffer buffer not-this-window frame))))
+; WINDOWS
 
-(setq display-buffer-function 'display-on-side)
+(defun kill-process (port)
+  (interactive "sProcess Port: ")
+  (let* ((cmd (concat "netstat -a -n -o | find \"" port "\""))
+         (pid (nth 4 (split-string (shell-command-to-string cmd)))))
+    (when pid (shell-command (concat "taskkill /F /PID " pid)))))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(package-selected-packages (quote (dracula-theme magit evil))))
+ '(ansi-color-names-vector
+   ["#2d3743" "#ff4242" "#74af68" "#dbdb95" "#34cae2" "#008b8b" "#00ede1" "#e1e1e0"])
+ '(custom-enabled-themes (quote (misterioso)))
+ '(custom-safe-themes
+   (quote
+    ("12bacee81d067acf07dec4c867be541a04744a6ac6a39636de25a2c77e9b573c" "bf390ecb203806cbe351b966a88fc3036f3ff68cd2547db6ee3676e87327b311" "aaffceb9b0f539b6ad6becb8e96a04f2140c8faa1de8039a343a4f1e009174fb" default)))
+ '(package-selected-packages
+   (quote
+    (refactor-nrepl clj-refactor nrepl ediprolog prolog-mode web-mode helm company oceanic-theme nord-theme cider dracula-theme magit evil))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:family "Office Code Pro D" :foundry "outline" :slant normal :weight normal :height 99 :width normal)))))
