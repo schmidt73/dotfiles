@@ -53,35 +53,32 @@ There are two things you can do about this warning:
   
   (define-key evil-normal-state-map (kbd "C-v") nil)
   (define-key evil-visual-state-map (kbd "C-v") nil)
-  (define-key evil-motion-state-map "\C-v" nil)
- 
-  (add-hook 'dired-mode-hook 'evil-emacs-state)
-  
-  (defun disable-evil-auto-indent ()
-    (make-variable-buffer-local 'evil-auto-indent)
-    (setq evil-auto-indent nil))
-  
-  (add-hook 'org-mode-hook 'disable-evil-auto-indent)
-  (add-hook 'org-mode-hook 'evil-emacs-state))
+  (define-key evil-motion-state-map "\C-v" nil))
 
-(use-package org
+(use-package bind-key
+  :ensure t)
+
+(use-package elpy
   :ensure t
-  :bind (("\C-cl" . org-store-link)
-         ("\C-ca" . org-agenda))
-  :config (setq org-log-done t))
+  :init
+  (elpy-enable)
+  :config
+  (add-hook 'elpy-mode-hook (lambda () (highlight-indentation-mode -1)))
+  (define-key elpy-mode-map (kbd "C-c C-e") nil)
+  (custom-set-variables '(elpy-shell-command-prefix-key "C-c C-e"))
+  (custom-set-variables '(elpy-syntax-check-command "flake8 --ignore E30")))
 
 (use-package zenburn-theme
   :ensure t)
 
-;;;; Clojure CONFIG
-
 (use-package cider
-  :ensure t
-  :hook ((cider-popup-buffer-mode-hook . evil-emacs-state)
-         (cider-repl-mode-hook . evil-emacs-state)
-         (cider-test-report-mode-hook . evil-emacs-state))
-  :config (add-to-list 'evil-emacs-state-modes 'cider-stacktrace-mode))
+  :ensure t)
 
+;;;; EVIL Config
+
+(evil-set-initial-state 'inferior-python-mode 'emacs)
+
+;;;; Clojure CONFIG
 (setq clojure-indent-style :always-indent)
 
 (setq-default electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
@@ -111,6 +108,8 @@ There are two things you can do about this warning:
 (setq backup-directory-alist `(("." . "~/.saves")))
 (setq backup-by-copying t)
 
+(scroll-bar-mode 0)
+
 (setq tab-width 4)
 (setq-default indent-tabs-mode nil) ; indent spaces
 
@@ -119,3 +118,20 @@ There are two things you can do about this warning:
   (let* ((cmd (concat "netstat -a -n -o | find \"" port "\""))
          (pid (nth 4 (split-string (shell-command-to-string cmd)))))
     (when pid (shell-command (concat "taskkill /F /PID " pid)))))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("84890723510d225c45aaff941a7e201606a48b973f0121cb9bcb0b9399be8cba" default)))
+ '(package-selected-packages
+   (quote
+    (elpy zenburn-theme use-package helm evil company cider))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
