@@ -14,7 +14,7 @@ There are two things you can do about this warning:
 1. Install an Emacs version that does support SSL and be safe.
 2. Remove this warning from your init file so you won't see it again."))
   ;; Comment/uncomment these two lines to enable/disable MELPA and MELPA Stable as desired
-  ;; (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  ;;(add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
   (add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
   (when (< emacs-major-version 24)
     ;; For important compatibility libraries like cl-lib
@@ -31,10 +31,15 @@ There are two things you can do about this warning:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(use-package ace-window
+  :ensure t
+  :bind (("C-x o" . ace-window)))
+
 (use-package helm
   :ensure t
   :bind (("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files)))
+         ("C-x C-f" . helm-find-files)
+         ("C-x b" . helm-mini)))
 
 (use-package company
   :ensure t
@@ -55,8 +60,22 @@ There are two things you can do about this warning:
   (define-key evil-visual-state-map (kbd "C-v") nil)
   (define-key evil-motion-state-map "\C-v" nil))
 
-(use-package bind-key
-  :ensure t)
+(use-package parinfer
+  :ensure t
+  :bind
+  (("C-," . parinfer-toggle-mode))
+  :init
+  (progn
+    (setq parinfer-extensions
+          '(defaults       ; should be included.
+            pretty-parens  ; different paren styles for different modes.
+            evil           ; If you use Evil.
+            smart-yank))   ; Yank behavior depend on mode.
+    (add-hook 'clojure-mode-hook #'parinfer-mode)
+    (add-hook 'emacs-lisp-mode-hook #'parinfer-mode)
+    (add-hook 'common-lisp-mode-hook #'parinfer-mode)
+    (add-hook 'scheme-mode-hook #'parinfer-mode)
+    (add-hook 'lisp-mode-hook #'parinfer-mode)))
 
 (use-package elpy
   :ensure t
@@ -80,9 +99,6 @@ There are two things you can do about this warning:
 
 ;;;; Clojure CONFIG
 (setq clojure-indent-style :always-indent)
-
-(setq-default electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit)
-(electric-pair-mode)
 
 (add-to-list 'exec-path "C:\\Program Files\\Lein")
 
@@ -118,20 +134,20 @@ There are two things you can do about this warning:
   (let* ((cmd (concat "netstat -a -n -o | find \"" port "\""))
          (pid (nth 4 (split-string (shell-command-to-string cmd)))))
     (when pid (shell-command (concat "taskkill /F /PID " pid)))))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   (quote
-    ("84890723510d225c45aaff941a7e201606a48b973f0121cb9bcb0b9399be8cba" default)))
+ '(elpy-shell-command-prefix-key "C-c C-e")
+ '(elpy-syntax-check-command "flake8 --ignore E30")
  '(package-selected-packages
    (quote
-    (elpy zenburn-theme use-package helm evil company cider))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+    (parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil elpy cider))))
+(custom-set-faces)
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
