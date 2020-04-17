@@ -20,7 +20,3 @@ The steps to setup are as follows:
 
 It might take a few minutes to install all the required plugins. Once
 complete, everything should be setup and installed properly.
-
-For python to work perfectly:
-
->> pip install jedi flake8 autopep8 black yapf

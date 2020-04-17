@@ -1,4 +1,4 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;             EMACS PACKAGE MANGER CONFIGURATION       ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -14,8 +14,8 @@ There are two things you can do about this warning:
 1. Install an Emacs version that does support SSL and be safe.
 2. Remove this warning from your init file so you won't see it again."))
   ;; Comment/uncomment these two lines to enable/disable MELPA and MELPA Stable as desired
-  ;;(add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
-  (add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
+  (add-to-list 'package-archives (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  ;;(add-to-list 'package-archives (cons "melpa-stable" (concat proto "://stable.melpa.org/packages/")) t)
   (when (< emacs-major-version 24)
     ;; For important compatibility libraries like cl-lib
     (add-to-list 'package-archives (cons "gnu" (concat proto "://elpa.gnu.org/packages/")))))
@@ -36,10 +36,15 @@ There are two things you can do about this warning:
   :bind (("C-x o" . ace-window)))
 
 (use-package helm
-  :ensure t
+  :ensure f
   :bind (("M-x" . helm-M-x)
          ("C-x C-f" . helm-find-files)
-         ("C-x b" . helm-mini)))
+         ("C-x b" . helm-mini))
+  :config (helm-mode 1))
+
+(use-package ivy
+  :ensure t
+  :bind (("C-s" . 'swiper-isearch)))
 
 (use-package company
   :ensure t
@@ -58,7 +63,8 @@ There are two things you can do about this warning:
   
   (define-key evil-normal-state-map (kbd "C-v") nil)
   (define-key evil-visual-state-map (kbd "C-v") nil)
-  (define-key evil-motion-state-map "\C-v" nil))
+  (define-key evil-motion-state-map "\C-v" nil)
+  (evil-set-initial-state 'inferior-python-mode 'emacs))
 
 (use-package parinfer
   :ensure t
@@ -68,24 +74,14 @@ There are two things you can do about this warning:
   (progn
     (setq parinfer-extensions
           '(defaults       ; should be included.
-            pretty-parens  ; different paren styles for different modes.
-            evil           ; If you use Evil.
-            smart-yank))   ; Yank behavior depend on mode.
+             pretty-parens  ; different paren styles for different modes.
+             evil           ; If you use Evil.
+             smart-yank))   ; Yank behavior depend on mode.
     (add-hook 'clojure-mode-hook #'parinfer-mode)
     (add-hook 'emacs-lisp-mode-hook #'parinfer-mode)
     (add-hook 'common-lisp-mode-hook #'parinfer-mode)
     (add-hook 'scheme-mode-hook #'parinfer-mode)
     (add-hook 'lisp-mode-hook #'parinfer-mode)))
-
-(use-package elpy
-  :ensure t
-  :init
-  (elpy-enable)
-  :config
-  (add-hook 'elpy-mode-hook (lambda () (highlight-indentation-mode -1)))
-  (define-key elpy-mode-map (kbd "C-c C-e") nil)
-  (custom-set-variables '(elpy-shell-command-prefix-key "C-c C-e"))
-  (custom-set-variables '(elpy-syntax-check-command "flake8 --ignore E30")))
 
 (use-package zenburn-theme
   :ensure t)
@@ -93,22 +89,38 @@ There are two things you can do about this warning:
 (use-package cider
   :ensure t)
 
-;;;; EVIL Config
+(use-package tex
+  :ensure auctex
+  :config
+  (setq TeX-view-program-list '(("Evince" "evince --page-index=%(outpage) %o")))
+  (setq TeX-view-program-selection '((output-pdf "Evince")))
+  (setq TeX-source-correlate-start-server t)
+  (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode))
 
-(evil-set-initial-state 'inferior-python-mode 'emacs)
+(use-package yasnippet
+  :ensure t
+  :config (yas-global-mode 1))
 
-;;;; Clojure CONFIG
-(setq clojure-indent-style :always-indent)
+(use-package magit
+  :ensure t
+  :config (global-set-key (kbd "C-x g") 'magit-status))
 
-(add-to-list 'exec-path "C:\\Program Files\\Lein")
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
 
-(defun create-empty-clj (pname)
-  (interactive "sClojure Project Name: ")
-  (let ((cmd (concat "lein new empty " pname))
-        (core-file (concat pname "/src/" pname "/core.clj")))
-    (shell-command cmd)
-    (find-file (expand-file-name core-file))
-    (cider-jack-in '())))
+;;;; BLOG CONFIG
+(defun new-blog-post (name)
+  (interactive "MPost name: ")
+  (let* ((posts-dir "/home/schmidt73/Desktop/blog/_posts/")
+         (post-file (concat posts-dir (format-time-string "%Y-%m-%d") "-" name ".markdown")))
+    (find-file post-file)
+    (insert "new-blog-post")
+    (evil-append-line 1)))
 
 ;;;; General CONFIG
 
@@ -129,12 +141,6 @@ There are two things you can do about this warning:
 (setq tab-width 4)
 (setq-default indent-tabs-mode nil) ; indent spaces
 
-(defun kill-process (port) ; TODO: Get to work with Linux too
-  (interactive "sProcess Port: ")
-  (let* ((cmd (concat "netstat -a -n -o | find \"" port "\""))
-         (pid (nth 4 (split-string (shell-command-to-string cmd)))))
-    (when pid (shell-command (concat "taskkill /F /PID " pid)))))
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -144,8 +150,33 @@ There are two things you can do about this warning:
  '(elpy-syntax-check-command "flake8 --ignore E30")
  '(package-selected-packages
    (quote
-    (parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil elpy cider))))
+    (counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
 (custom-set-faces)
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
 ;; custom-set-faces was added by Custom.
 ;; If you edit it by hand, you could mess it up, so be careful.
 ;; Your init file should contain only one such instance.
