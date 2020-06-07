@@ -1,4 +1,4 @@
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;             EMACS PACKAGE MANGER CONFIGURATION       ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -36,15 +36,30 @@ There are two things you can do about this warning:
   :bind (("C-x o" . ace-window)))
 
 (use-package helm
-  :ensure f
+  :ensure t
   :bind (("M-x" . helm-M-x)
          ("C-x C-f" . helm-find-files)
+         ("C-x C-g" . helm-browse-project)
          ("C-x b" . helm-mini))
-  :config (helm-mode 1))
+  :config
+  (helm-mode 1)
+  (add-to-list 'helm-completing-read-handlers-alist '(reftex-citation . nil)))
 
-(use-package ivy
+(use-package helm-swoop
   :ensure t
-  :bind (("C-s" . 'swiper-isearch)))
+  :bind ("C-s" . helm-swoop))
+  
+(use-package projectile
+  :ensure t
+  :bind (("M-p" . projectile-command-map)
+         ("C-c p" . projectile-command-map))
+  :config
+  (setq projectile-completion-system 'helm)
+  (projectile-mode 1))
+
+(use-package helm-projectile
+  :ensure t
+  :config (helm-projectile-on))
 
 (use-package company
   :ensure t
@@ -65,6 +80,11 @@ There are two things you can do about this warning:
   (define-key evil-visual-state-map (kbd "C-v") nil)
   (define-key evil-motion-state-map "\C-v" nil)
   (evil-set-initial-state 'inferior-python-mode 'emacs))
+
+(use-package evil-surround
+  :ensure t
+  :config
+  (global-evil-surround-mode 1))
 
 (use-package parinfer
   :ensure t
@@ -113,6 +133,21 @@ There are two things you can do about this warning:
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
 
+(use-package org
+  :ensure t
+  :config (setq org-latex-pdf-process
+                '("%latex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                  "%latex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                  "%latex -shell-escape -interaction nonstopmode -output-directory %o %f")))
+
+(use-package elpy
+  :ensure t
+  :config (setq elpy-rpc-virtualenv-path 'current))
+
+(use-package conda
+  :ensure t
+  :config (setq conda-env-home-directory (expand-file-name "~/miniconda3/")))
+
 ;;;; BLOG CONFIG
 (defun new-blog-post (name)
   (interactive "MPost name: ")
@@ -123,6 +158,7 @@ There are two things you can do about this warning:
     (evil-append-line 1)))
 
 ;;;; General CONFIG
+(server-start)
 
 (eval-after-load "dired"
   '(progn
@@ -150,33 +186,43 @@ There are two things you can do about this warning:
  '(elpy-syntax-check-command "flake8 --ignore E30")
  '(package-selected-packages
    (quote
-    (counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
+    (helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
 (custom-set-faces)
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- 
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- 
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- 
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- 
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
 ;; custom-set-faces was added by Custom.
 ;; If you edit it by hand, you could mess it up, so be careful.
 ;; Your init file should contain only one such instance.
