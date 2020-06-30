@@ -66,6 +66,39 @@ There are two things you can do about this warning:
   :bind (("TAB" . company-indent-or-complete-common))
   :config (global-company-mode))
 
+(use-package treemacs
+  :ensure t
+  :defer t
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+(use-package treemacs-evil
+  :after treemacs evil
+  :ensure t)
+
+(use-package treemacs-projectile
+  :after treemacs projectile
+  :ensure t)
+
+(use-package treemacs-icons-dired
+  :after treemacs dired
+  :ensure t
+  :config (treemacs-icons-dired-mode))
+
+(use-package treemacs-magit
+  :after treemacs magit
+  :ensure t)
+
+(use-package smart-mode-line
+  :ensure t
+  :config (sml/setup))
+
 (use-package undo-tree ; This is required to ensure we have a undo tree
   :ensure t)           ; (default of VIM) vs linear undo (default of EMACS)
 
@@ -103,9 +136,6 @@ There are two things you can do about this warning:
     (add-hook 'scheme-mode-hook #'parinfer-mode)
     (add-hook 'lisp-mode-hook #'parinfer-mode)))
 
-(use-package zenburn-theme
-  :ensure t)
-
 (use-package cider
   :ensure t)
 
@@ -135,14 +165,43 @@ There are two things you can do about this warning:
 
 (use-package org
   :ensure t
-  :config (setq org-latex-pdf-process
-                '("%latex -shell-escape -interaction nonstopmode -output-directory %o %f"
-                  "%latex -shell-escape -interaction nonstopmode -output-directory %o %f"
-                  "%latex -shell-escape -interaction nonstopmode -output-directory %o %f")))
+  :bind (("C-c a" . org-agenda))
+  :config
+  (setq org-latex-create-formula-image-program 'dvipng)
+  (setq org-latex-pdf-process
+        '("%latex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "%latex -shell-escape -interaction nonstopmode -output-directory %o %f"
+          "%latex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+  (setq org-log-done nil)
+  (setq org-log-into-drawer t)
+  (setq org-todo-keywords
+        (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+                (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+  (setq org-todo-keyword-faces
+        (quote (("TODO" :foreground "red" :weight bold)
+                ("NEXT" :foreground "blue" :weight bold)
+                ("DONE" :foreground "forest green" :weight bold)
+                ("WAITING" :foreground "orange" :weight bold)
+                ("HOLD" :foreground "magenta" :weight bold)
+                ("CANCELLED" :foreground "forest green" :weight bold)
+                ("MEETING" :foreground "forest green" :weight bold)
+                ("PHONE" :foreground "forest green" :weight bold)))))
 
-(use-package elpy
+(use-package julia-mode
   :ensure t
-  :config (setq elpy-rpc-virtualenv-path 'current))
+  :config
+  (add-hook 'julia-mode-hook 'julia-repl-mode))
+
+(defun project-root (project)
+  (car (project-roots project)))
+
+;; (use-package elpy
+;; :ensure t
+;; :defer t
+;; :init
+;; (advice-add 'python-mode :before 'elpy-enable)
+;; :config
+;; (setq elpy-rpc-virtualenv-path 'current))
 
 (use-package conda
   :ensure t
@@ -157,7 +216,13 @@ There are two things you can do about this warning:
     (insert "new-blog-post")
     (evil-append-line 1)))
 
+(defun py-sandbox()
+  (interactive)
+  (delete-file "~/sandbox/sandbox.py")
+  (find-file "~/sandbox/sandbox.py"))
+
 ;;;; General CONFIG
+(desktop-save-mode 1)
 (server-start)
 
 (eval-after-load "dired"
@@ -182,49 +247,18 @@ There are two things you can do about this warning:
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" default)))
  '(elpy-shell-command-prefix-key "C-c C-e")
  '(elpy-syntax-check-command "flake8 --ignore E30")
+ '(org-agenda-files (quote ("~/Dropbox/org/plan.org")))
  '(package-selected-packages
    (quote
-    (helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
-(custom-set-faces)
+    (smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
+(custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- 
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-
+ )
