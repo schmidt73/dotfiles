@@ -43,9 +43,10 @@ There are two things you can do about this warning:
   (load-theme 'doom-acario-light t)
   (doom-themes-treemacs-config)
   (doom-themes-visual-bell-config))
+
 (use-package projectile
   :ensure t
-  :bind (("M-p" . projectile-m)
+  :bind (("M-p" . projectile-command-map)
          ("C-c p" . projectile-command-map))
   :config
   (setq projectile-completion-system 'helm)
@@ -184,13 +185,6 @@ There are two things you can do about this warning:
                 ("MEETING" :foreground "forest green" :weight bold)
                 ("PHONE" :foreground "forest green" :weight bold)))))
 
-(use-package julia-mode
-  :ensure t
-  :config
-  (add-hook 'julia-mode-hook 'julia-repl-mode)
-  (setenv "PATH" (concat (getenv "PATH") ":/opt/julia-1.4.2/bin"))
-  (setq exec-path (append exec-path '("/opt/julia-1.4.2/bin"))))
-
 ;;;; helm CONFIG
 (use-package helm
   :ensure t
@@ -207,7 +201,7 @@ There are two things you can do about this warning:
   :bind ("C-s" . helm-swoop)
   :config
   (setq helm-swoop-split-window-function 'display-buffer))
- 
+
 (use-package shackle
   :ensure t
   :config
@@ -215,6 +209,16 @@ There are two things you can do about this warning:
   (setq shackle-rules
         '((("*helm*" "*Helm*") :regexp t :align 'below  :same nil :popup t)))
   (shackle-mode))
+
+
+;;;; Julia CONFIG
+(use-package julia-mode
+  :ensure t
+  :config
+  (add-hook 'julia-mode-hook 'julia-repl-mode)
+  (setenv "PATH" (concat (getenv "PATH") ":/opt/julia-1.4.2/bin"))
+  (setq exec-path (append exec-path '("/opt/julia-1.4.2/bin"))))
+
 
 ;;;; Python CONFIG
 (use-package elpy
@@ -278,8 +282,9 @@ There are two things you can do about this warning:
    (quote
     (all-the-icons doom-themes smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
 (custom-set-faces)
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- 
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
+
