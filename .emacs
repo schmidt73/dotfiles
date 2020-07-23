@@ -35,23 +35,17 @@ There are two things you can do about this warning:
   :ensure t
   :bind (("C-x o" . ace-window)))
 
-(use-package helm
+(use-package doom-themes
   :ensure t
-  :bind (("M-x" . helm-M-x)
-         ("C-x C-f" . helm-find-files)
-         ("C-x C-g" . helm-browse-project)
-         ("C-x b" . helm-mini))
   :config
-  (helm-mode 1)
-  (add-to-list 'helm-completing-read-handlers-alist '(reftex-citation . nil)))
-
-(use-package helm-swoop
-  :ensure t
-  :bind ("C-s" . helm-swoop))
-  
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  (load-theme 'doom-acario-light t)
+  (doom-themes-treemacs-config)
+  (doom-themes-visual-bell-config))
 (use-package projectile
   :ensure t
-  :bind (("M-p" . projectile-command-map)
+  :bind (("M-p" . projectile-m)
          ("C-c p" . projectile-command-map))
   :config
   (setq projectile-completion-system 'helm)
@@ -63,8 +57,10 @@ There are two things you can do about this warning:
 
 (use-package company
   :ensure t
-  :bind (("TAB" . company-indent-or-complete-common))
-  :config (global-company-mode))
+  :bind* (("M-/" . company-complete))
+  :config
+  (setq company-idle-delay 0)
+  (global-company-mode))
 
 (use-package treemacs
   :ensure t
@@ -97,10 +93,12 @@ There are two things you can do about this warning:
 
 (use-package smart-mode-line
   :ensure t
-  :config (sml/setup))
+  :config
+  (setq sml/no-confirm-load-theme t)
+  (sml/setup))
 
-(use-package undo-tree ; This is required to ensure we have a undo tree
-  :ensure t)           ; (default of VIM) vs linear undo (default of EMACS)
+(use-package undo-tree
+  :ensure t)
 
 (use-package evil
   :ensure t
@@ -108,7 +106,6 @@ There are two things you can do about this warning:
   (evil-mode 1)
   (define-key evil-normal-state-map (kbd "C-b") 'evil-visual-block)
   (define-key evil-visual-state-map (kbd "C-b") 'evil-visual-block)
-  
   (define-key evil-normal-state-map (kbd "C-v") nil)
   (define-key evil-visual-state-map (kbd "C-v") nil)
   (define-key evil-motion-state-map "\C-v" nil)
@@ -190,22 +187,51 @@ There are two things you can do about this warning:
 (use-package julia-mode
   :ensure t
   :config
-  (add-hook 'julia-mode-hook 'julia-repl-mode))
+  (add-hook 'julia-mode-hook 'julia-repl-mode)
+  (setenv "PATH" (concat (getenv "PATH") ":/opt/julia-1.4.2/bin"))
+  (setq exec-path (append exec-path '("/opt/julia-1.4.2/bin"))))
 
-(defun project-root (project)
-  (car (project-roots project)))
-
-;; (use-package elpy
-;; :ensure t
-;; :defer t
-;; :init
-;; (advice-add 'python-mode :before 'elpy-enable)
-;; :config
-;; (setq elpy-rpc-virtualenv-path 'current))
-
-(use-package conda
+;;;; helm CONFIG
+(use-package helm
   :ensure t
-  :config (setq conda-env-home-directory (expand-file-name "~/miniconda3/")))
+  :bind (("M-x" . helm-M-x)
+         ("C-x C-f" . helm-find-files)
+         ("C-x C-g" . helm-browse-project)
+         ("C-x b" . helm-mini))
+  :config
+  (helm-mode 1)
+  (add-to-list 'helm-completing-read-handlers-alist '(reftex-citation . nil)))
+
+(use-package helm-swoop
+  :ensure t
+  :bind ("C-s" . helm-swoop)
+  :config
+  (setq helm-swoop-split-window-function 'display-buffer))
+ 
+(use-package shackle
+  :ensure t
+  :config
+  (setq shackle-default-ratio 0.35)
+  (setq shackle-rules
+        '((("*helm*" "*Helm*") :regexp t :align 'below  :same nil :popup t)))
+  (shackle-mode))
+
+;;;; Python CONFIG
+(use-package elpy
+  :ensure t
+  :defer t
+  :init (advice-add 'python-mode :before 'elpy-enable)
+  :config (setq elpy-rpc-virtualenv-path 'current))
+
+(defun activate-python-environment ()
+  (interactive)
+  (let* ((files (seq-remove
+                 (lambda (fname) (equal "." (substring (file-name-nondirectory fname) 0 1)))
+                 (directory-files "~/miniconda3/envs" t)))
+         (selection
+          (helm :sources (helm-build-sync-source "Select Python Environment" :candidates files)
+                :buffer "*helm select python environment to activate*")))
+    (pyvenv-activate selection)))
 
 ;;;; BLOG CONFIG
 (defun new-blog-post (name)
@@ -215,11 +241,6 @@ There are two things you can do about this warning:
     (find-file post-file)
     (insert "new-blog-post")
     (evil-append-line 1)))
-
-(defun py-sandbox()
-  (interactive)
-  (delete-file "~/sandbox/sandbox.py")
-  (find-file "~/sandbox/sandbox.py"))
 
 ;;;; General CONFIG
 (desktop-save-mode 1)
@@ -249,16 +270,16 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" default)))
+    ("93ed23c504b202cf96ee591138b0012c295338f38046a1f3c14522d4a64d7308" "0cb1b0ea66b145ad9b9e34c850ea8e842c4c4c83abe04e37455a1ef4cc5b8791" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" default)))
  '(elpy-shell-command-prefix-key "C-c C-e")
  '(elpy-syntax-check-command "flake8 --ignore E30")
  '(org-agenda-files (quote ("~/Dropbox/org/plan.org")))
  '(package-selected-packages
    (quote
-    (smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
-(custom-set-faces
+    (all-the-icons doom-themes smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
+(custom-set-faces)
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ 
