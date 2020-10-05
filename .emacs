@@ -104,6 +104,7 @@ There are two things you can do about this warning:
 (use-package evil
   :ensure t
   :config
+  (evil-ex-define-cmd "q" 'kill-this-buffer)
   (evil-mode 1)
   (define-key evil-normal-state-map (kbd "C-b") 'evil-visual-block)
   (define-key evil-visual-state-map (kbd "C-b") 'evil-visual-block)
@@ -134,8 +135,6 @@ There are two things you can do about this warning:
     (add-hook 'scheme-mode-hook #'parinfer-mode)
     (add-hook 'lisp-mode-hook #'parinfer-mode)))
 
-(use-package cider
-  :ensure t)
 
 (use-package tex
   :ensure auctex
@@ -161,10 +160,15 @@ There are two things you can do about this warning:
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown"))
 
+;;;; org CONFIG
 (use-package org
   :ensure t
   :bind (("C-c a" . org-agenda))
   :config
+  (setq org-capture-templates
+        '(("c" "Citation" plain (file "~/Dropbox/org/ref/master.bib")
+           "\n%x\n")))
+  (setq org-agenda-files '("~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org"))
   (setq org-latex-create-formula-image-program 'dvipng)
   (setq org-latex-pdf-process
         '("%latex -shell-escape -interaction nonstopmode -output-directory %o %f"
@@ -172,6 +176,7 @@ There are two things you can do about this warning:
           "%latex -shell-escape -interaction nonstopmode -output-directory %o %f"))
   (setq org-log-done nil)
   (setq org-log-into-drawer t)
+  (setq org-hide-leading-stars t)
   (setq org-todo-keywords
         (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
                 (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
@@ -184,6 +189,25 @@ There are two things you can do about this warning:
                 ("CANCELLED" :foreground "forest green" :weight bold)
                 ("MEETING" :foreground "forest green" :weight bold)
                 ("PHONE" :foreground "forest green" :weight bold)))))
+
+(use-package org-ref
+  :ensure t
+  :config
+  (setq org-ref-bibliography-notes "~/Dropbox/org/ref/notes.org"
+        org-ref-default-bibliography '("~/Dropbox/org/ref/master.bib")
+        org-ref-pdf-directory "~/Dropbox/org/ref/pdfs/"))
+
+(use-package org-noter
+  :ensure t
+  :config
+  (setq org-noter-default-notes-file-names '("~/Dropbox/org/ref/notes.org"))
+  (setq org-noter-notes-search-path '("~/Dropbox/org/ref/notes.org"))
+  (setq org-noter-auto-save-last-location t))
+
+(use-package pdf-tools
+  :ensure t
+  :config
+  (pdf-tools-install))
 
 ;;;; helm CONFIG
 (use-package helm
@@ -198,7 +222,8 @@ There are two things you can do about this warning:
 
 (use-package helm-swoop
   :ensure t
-  :bind ("C-s" . helm-swoop)
+  :bind (("C-s" . helm-swoop)
+         ("M-p C-s" . helm-multi-swoop-projectile))
   :config
   (setq helm-swoop-split-window-function 'display-buffer))
 
@@ -210,6 +235,23 @@ There are two things you can do about this warning:
         '((("*helm*" "*Helm*") :regexp t :align 'below  :same nil :popup t)))
   (shackle-mode))
 
+;;;; Clojure CONFIG
+(use-package cider
+  :ensure t
+  :config (add-hook 'cider-popup-buffer-mode-hook (lambda () (evil-insert 1))))
+
+(defun clojure-reload ()
+  (interactive)
+  (cider-switch-to-repl-buffer)
+  (insert "(reset-all)")
+  (cider-repl-return)
+  (cider-switch-to-last-clojure-buffer))
+
+;;;; Javascript CONFIG
+(use-package js2-mode
+  :ensure t
+  :config
+  (setq js2-basic-offset 2))
 
 ;;;; Julia CONFIG
 (use-package julia-mode
@@ -219,6 +261,23 @@ There are two things you can do about this warning:
   (setenv "PATH" (concat (getenv "PATH") ":/opt/julia-1.4.2/bin"))
   (setq exec-path (append exec-path '("/opt/julia-1.4.2/bin"))))
 
+(use-package julia-repl
+  :ensure t)
+
+(defun julia-strip-repl-response (raw-response line)
+  (substring raw-response
+             (length line)
+             (- (length raw-response) (length "julia> "))))
+
+(defun julia-repl-send-line-and-read (line)
+  (with-current-buffer (julia-repl-inferior-buffer)
+    (let ((starting-pos (point)))
+      (term-send-raw-string line)
+      (term-send-raw-string "\t")
+      (sleep-for 0.5)
+      (let ((raw-response (buffer-substring-no-properties
+                           starting-pos (length (buffer-string)))))
+        (julia-strip-repl-response raw-response line)))))
 
 ;;;; Python CONFIG
 (use-package elpy
@@ -237,6 +296,23 @@ There are two things you can do about this warning:
                 :buffer "*helm select python environment to activate*")))
     (pyvenv-activate selection)))
 
+;;;; C/C++ Config
+
+(use-package irony
+  :ensure t
+  :config 
+  (add-hook 'irony-mode-hook 'irony-eldoc)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+  (add-hook 'c++-mode-hook 'irony-mode))
+
+(use-package company-irony
+  :ensure t
+  :config
+  (eval-after-load 'company
+    '(add-to-list 'company-backends 'company-irony)))
+
+(setq c-basic-offset 4)
+
 ;;;; BLOG CONFIG
 (defun new-blog-post (name)
   (interactive "MPost name: ")
@@ -247,7 +323,6 @@ There are two things you can do about this warning:
     (evil-append-line 1)))
 
 ;;;; General CONFIG
-(desktop-save-mode 1)
 (server-start)
 
 (eval-after-load "dired"
@@ -259,9 +334,15 @@ There are two things you can do about this warning:
        (let* ((fn-list (dired-get-marked-files nil arg)))
          (mapc 'find-file fn-list)))))
 
-(setq backup-directory-alist `(("." . "~/.saves")))
-(setq backup-by-copying t)
+(setq backup-directory-alist
+      `((".*" . ,temporary-file-directory)))
 
+(setq auto-save-file-name-transforms
+      `((".*" ,temporary-file-directory t)))
+
+(setq create-lockfiles nil)
+
+(tool-bar-mode 0)
 (scroll-bar-mode 0)
 
 (setq tab-width 4)
@@ -274,17 +355,46 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("93ed23c504b202cf96ee591138b0012c295338f38046a1f3c14522d4a64d7308" "0cb1b0ea66b145ad9b9e34c850ea8e842c4c4c83abe04e37455a1ef4cc5b8791" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" default)))
+    ("bf387180109d222aee6bb089db48ed38403a1e330c9ec69fe1f52460a8936b66" "93ed23c504b202cf96ee591138b0012c295338f38046a1f3c14522d4a64d7308" "0cb1b0ea66b145ad9b9e34c850ea8e842c4c4c83abe04e37455a1ef4cc5b8791" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" default)))
  '(elpy-shell-command-prefix-key "C-c C-e")
  '(elpy-syntax-check-command "flake8 --ignore E30")
- '(org-agenda-files (quote ("~/Dropbox/org/plan.org")))
+ '(org-agenda-files
+   (quote
+    ("~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org")))
+ '(org-format-latex-options
+   (quote
+    (:foreground default :background default :scale 1.5 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
+                 ("begin" "$1" "$" "$$" "\\(" "\\["))))
+ '(org-noter-notes-search-path (quote ("~/Dropbox/org/")))
  '(package-selected-packages
    (quote
-    (all-the-icons doom-themes smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider))))
-(custom-set-faces)
+    (js2-mode irony-eldoc company-irony irony helm-bibtexkey org-ref org-noter pdf-tools let-alist ## tablist eterm-256color all-the-icons doom-themes smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider)))
+ '(pdf-tools-enabled-hook nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
 ;; custom-set-faces was added by Custom.
 ;; If you edit it by hand, you could mess it up, so be careful.
 ;; Your init file should contain only one such instance.
 ;; If there is more than one, they won't work right.
 
 
+(put 'upcase-region 'disabled nil)
