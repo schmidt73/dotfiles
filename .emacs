@@ -40,7 +40,7 @@ There are two things you can do about this warning:
   :config
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t)
-  (load-theme 'doom-acario-light t)
+  (load-theme 'doom-gruvbox)
   (doom-themes-treemacs-config)
   (doom-themes-visual-bell-config))
 
@@ -96,7 +96,7 @@ There are two things you can do about this warning:
   :ensure t
   :config
   (setq sml/no-confirm-load-theme t)
-  (sml/setup))
+  (sml/setup 'respectful))
 
 (use-package undo-tree
   :ensure t)
@@ -116,6 +116,14 @@ There are two things you can do about this warning:
 (use-package evil-surround
   :ensure t
   :config
+  (evil-add-to-alist
+   'evil-surround-pairs-alist
+   ?\( '("(" . ")")
+   ?\[ '("[" . "]")
+   ?\{ '("{" . "}")
+   ?\) '("( " . " )")
+   ?\] '("[ " . " ]")
+   ?\} '("{ " . " }"))
   (global-evil-surround-mode 1))
 
 (use-package parinfer
@@ -178,24 +186,22 @@ There are two things you can do about this warning:
   (setq org-log-into-drawer t)
   (setq org-hide-leading-stars t)
   (setq org-todo-keywords
-        (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-                (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
+        (quote ((sequence "TODO(t)" "INPROGRESS(p)" "|" "DONE(d!)"))))
   (setq org-todo-keyword-faces
         (quote (("TODO" :foreground "red" :weight bold)
-                ("NEXT" :foreground "blue" :weight bold)
-                ("DONE" :foreground "forest green" :weight bold)
-                ("WAITING" :foreground "orange" :weight bold)
-                ("HOLD" :foreground "magenta" :weight bold)
-                ("CANCELLED" :foreground "forest green" :weight bold)
-                ("MEETING" :foreground "forest green" :weight bold)
-                ("PHONE" :foreground "forest green" :weight bold)))))
+                ("INPROGRESS" :foreground "yellow" :weight bold)
+                ("DONE" :foreground "forest green" :weight bold)))))
 
 (use-package org-ref
   :ensure t
   :config
   (setq org-ref-bibliography-notes "~/Dropbox/org/ref/notes.org"
         org-ref-default-bibliography '("~/Dropbox/org/ref/master.bib")
-        org-ref-pdf-directory "~/Dropbox/org/ref/pdfs/"))
+        org-ref-pdf-directory "~/Dropbox/org/ref/pdfs/")
+  (setq org-ref-open-pdf-function 'org-ref-open-pdf-at-point)
+  (setq bibtex-completion-pdf-open-function
+        (lambda (fpath)
+          (async-shell-command (concat "okular " fpath)))))
 
 (use-package org-noter
   :ensure t
@@ -203,6 +209,12 @@ There are two things you can do about this warning:
   (setq org-noter-default-notes-file-names '("~/Dropbox/org/ref/notes.org"))
   (setq org-noter-notes-search-path '("~/Dropbox/org/ref/notes.org"))
   (setq org-noter-auto-save-last-location t))
+
+(use-package polymode
+  :ensure t)
+
+(use-package poly-org
+  :ensure t)
 
 (use-package pdf-tools
   :ensure t
@@ -296,7 +308,7 @@ There are two things you can do about this warning:
                 :buffer "*helm select python environment to activate*")))
     (pyvenv-activate selection)))
 
-;;;; C/C++ Config
+;;;; C/C++ CONFIG
 
 (use-package irony
   :ensure t
@@ -325,6 +337,9 @@ There are two things you can do about this warning:
 ;;;; General CONFIG
 (server-start)
 
+(require 'ox)
+(require 'org-drill)
+
 (eval-after-load "dired"
   '(progn
      (define-key dired-mode-map "f" 'my-dired-find-file)
@@ -333,6 +348,7 @@ There are two things you can do about this warning:
        (interactive "P")
        (let* ((fn-list (dired-get-marked-files nil arg)))
          (mapc 'find-file fn-list)))))
+
 
 (setq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
@@ -344,6 +360,7 @@ There are two things you can do about this warning:
 
 (tool-bar-mode 0)
 (scroll-bar-mode 0)
+(add-hook 'prog-mode-hook 'display-line-numbers-mode)
 
 (setq tab-width 4)
 (setq-default indent-tabs-mode nil) ; indent spaces
@@ -355,12 +372,13 @@ There are two things you can do about this warning:
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("bf387180109d222aee6bb089db48ed38403a1e330c9ec69fe1f52460a8936b66" "93ed23c504b202cf96ee591138b0012c295338f38046a1f3c14522d4a64d7308" "0cb1b0ea66b145ad9b9e34c850ea8e842c4c4c83abe04e37455a1ef4cc5b8791" "3577ee091e1d318c49889574a31175970472f6f182a9789f1a3e9e4513641d86" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "c433c87bd4b64b8ba9890e8ed64597ea0f8eb0396f4c9a9e01bd20a04d15d358" default)))
+    ("e2acbf379aa541e07373395b977a99c878c30f20c3761aac23e9223345526bcc" default)))
  '(elpy-shell-command-prefix-key "C-c C-e")
  '(elpy-syntax-check-command "flake8 --ignore E30")
  '(org-agenda-files
    (quote
-    ("~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org")))
+    ("~/Dropbox/org/mskcc/f1_mice.org" "~/Dropbox/org/gradschool/grfp/personal.org" "~/Dropbox/org/gradschool/grfp/proposal.org" "~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org")))
+ '(org-babel-load-languages (quote ((emacs-lisp . t) (shell . t) (python . t))))
  '(org-format-latex-options
    (quote
     (:foreground default :background default :scale 1.5 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
@@ -368,7 +386,7 @@ There are two things you can do about this warning:
  '(org-noter-notes-search-path (quote ("~/Dropbox/org/")))
  '(package-selected-packages
    (quote
-    (js2-mode irony-eldoc company-irony irony helm-bibtexkey org-ref org-noter pdf-tools let-alist ## tablist eterm-256color all-the-icons doom-themes smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider)))
+    (poly-org polymode org-drill iedit js2-mode irony-eldoc company-irony irony helm-bibtexkey org-ref org-noter pdf-tools let-alist ## tablist eterm-256color all-the-icons doom-themes smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider)))
  '(pdf-tools-enabled-hook nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
@@ -398,3 +416,4 @@ There are two things you can do about this warning:
 
 
 (put 'upcase-region 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
