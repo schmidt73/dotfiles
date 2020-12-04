@@ -40,7 +40,7 @@ There are two things you can do about this warning:
   :config
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t)
-  (load-theme 'doom-gruvbox)
+  (load-theme 'doom-tomorrow-day)
   (doom-themes-treemacs-config)
   (doom-themes-visual-bell-config))
 
@@ -143,7 +143,6 @@ There are two things you can do about this warning:
     (add-hook 'scheme-mode-hook #'parinfer-mode)
     (add-hook 'lisp-mode-hook #'parinfer-mode)))
 
-
 (use-package tex
   :ensure auctex
   :config
@@ -189,19 +188,28 @@ There are two things you can do about this warning:
         (quote ((sequence "TODO(t)" "INPROGRESS(p)" "|" "DONE(d!)"))))
   (setq org-todo-keyword-faces
         (quote (("TODO" :foreground "red" :weight bold)
+                ("CANCELLED" :foreground "blue" :weight bold)
                 ("INPROGRESS" :foreground "yellow" :weight bold)
                 ("DONE" :foreground "forest green" :weight bold)))))
 
+(use-package helm-bibtex
+  :ensure t
+  :config
+  (setq bibtex-completion-pdf-open-function
+        (lambda (fpath)
+          (async-shell-command (concat "okular " fpath))))
+  (setq bibtex-completion-bibliography
+      '("~/Dropbox/org/ref/master.bib"))
+  (setq bibtex-completion-library-path
+      '("~/Dropbox/org/ref/pdfs/")))
+  
 (use-package org-ref
   :ensure t
   :config
   (setq org-ref-bibliography-notes "~/Dropbox/org/ref/notes.org"
         org-ref-default-bibliography '("~/Dropbox/org/ref/master.bib")
         org-ref-pdf-directory "~/Dropbox/org/ref/pdfs/")
-  (setq org-ref-open-pdf-function 'org-ref-open-pdf-at-point)
-  (setq bibtex-completion-pdf-open-function
-        (lambda (fpath)
-          (async-shell-command (concat "okular " fpath)))))
+  (setq org-ref-open-pdf-function 'org-ref-open-pdf-at-point))
 
 (use-package org-noter
   :ensure t
@@ -244,7 +252,8 @@ There are two things you can do about this warning:
   :config
   (setq shackle-default-ratio 0.35)
   (setq shackle-rules
-        '((("*helm*" "*Helm*") :regexp t :align 'below  :same nil :popup t)))
+        '((("*helm*" "*Helm*" "*helm bibtex*")
+           :regexp t :align 'below  :same nil :popup t)))
   (shackle-mode))
 
 ;;;; Clojure CONFIG
@@ -291,12 +300,12 @@ There are two things you can do about this warning:
                            starting-pos (length (buffer-string)))))
         (julia-strip-repl-response raw-response line)))))
 
-;;;; Python CONFIG
+;; Python CONFIG
 (use-package elpy
   :ensure t
-  :defer t
-  :init (advice-add 'python-mode :before 'elpy-enable)
-  :config (setq elpy-rpc-virtualenv-path 'current))
+  :config
+  (elpy-enable)
+  (setq elpy-rpc-virtualenv-path 'current))
 
 (defun activate-python-environment ()
   (interactive)
@@ -308,8 +317,7 @@ There are two things you can do about this warning:
                 :buffer "*helm select python environment to activate*")))
     (pyvenv-activate selection)))
 
-;;;; C/C++ CONFIG
-
+;; C/C++ CONFIG
 (use-package irony
   :ensure t
   :config 
@@ -323,7 +331,25 @@ There are two things you can do about this warning:
   (eval-after-load 'company
     '(add-to-list 'company-backends 'company-irony)))
 
+
 (setq c-basic-offset 4)
+
+;; Font config
+(use-package ligature
+  :load-path "~/.emacs.d/ligature.el"
+  :config
+  (ligature-set-ligatures 't '("www"))
+  (ligature-set-ligatures 'prog-mode '("www" "**" "***" "**/" "*>" "*/" "\\\\" "\\\\\\" "{-" "::"
+                                       ":::" ":=" "!!" "!=" "!==" "-}" "----" "-->" "->" "->>"
+                                       "-<" "-<<" "-~" "#{" "#[" "##" "###" "####" "#(" "#?" "#_"
+                                       "#_(" ".-" ".=" ".." "..<" "..." "?=" "??" ";;" "/*" "/**"
+                                       "/=" "/==" "/>" "//" "///" "&&" "||" "||=" "|=" "|>" "^=" "$>"
+                                       "++" "+++" "+>" "=:=" "==" "===" "==>" "=>" "=>>" "<="
+                                       "=<<" "=/=" ">-" ">=" ">=>" ">>" ">>-" ">>=" ">>>" "<*"
+                                       "<*>" "<|" "<|>" "<$" "<$>" "<!--" "<-" "<--" "<->" "<+"
+                                       "<+>" "<=" "<==" "<=>" "<=<" "<>" "<<" "<<-" "<<=" "<<<"
+                                       "<~" "<~~" "</" "</>" "~@" "~-" "~>" "~~" "~~>" "%%"))
+  (global-ligature-mode 't))
 
 ;;;; BLOG CONFIG
 (defun new-blog-post (name)
@@ -337,9 +363,6 @@ There are two things you can do about this warning:
 ;;;; General CONFIG
 (server-start)
 
-(require 'ox)
-(require 'org-drill)
-
 (eval-after-load "dired"
   '(progn
      (define-key dired-mode-map "f" 'my-dired-find-file)
@@ -348,7 +371,6 @@ There are two things you can do about this warning:
        (interactive "P")
        (let* ((fn-list (dired-get-marked-files nil arg)))
          (mapc 'find-file fn-list)))))
-
 
 (setq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
@@ -365,35 +387,65 @@ There are two things you can do about this warning:
 (setq tab-width 4)
 (setq-default indent-tabs-mode nil) ; indent spaces
 
+;; Fixes bug when opening Java files...
+(add-to-list 'auto-mode-alist '("\\.java\\'"))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector
+   ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])
  '(custom-safe-themes
-   (quote
-    ("e2acbf379aa541e07373395b977a99c878c30f20c3761aac23e9223345526bcc" default)))
+   '("7a994c16aa550678846e82edc8c9d6a7d39cc6564baaaacc305a3fdc0bd8725f" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "dde8c620311ea241c0b490af8e6f570fdd3b941d7bc209e55cd87884eb733b0e" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "9b01a258b57067426cc3c8155330b0381ae0d8dd41d5345b5eddac69f40d409b" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "632694fd8a835e85bcc8b7bb5c1df1a0164689bc6009864faed38a9142b97057" "e2acbf379aa541e07373395b977a99c878c30f20c3761aac23e9223345526bcc" default))
  '(elpy-shell-command-prefix-key "C-c C-e")
  '(elpy-syntax-check-command "flake8 --ignore E30")
+ '(fci-rule-color "#383a42")
+ '(jdee-db-active-breakpoint-face-colors (cons "#f0f0f0" "#4078f2"))
+ '(jdee-db-requested-breakpoint-face-colors (cons "#f0f0f0" "#50a14f"))
+ '(jdee-db-spec-breakpoint-face-colors (cons "#f0f0f0" "#9ca0a4"))
+ '(objed-cursor-color "#e45649")
  '(org-agenda-files
-   (quote
-    ("~/Dropbox/org/mskcc/f1_mice.org" "~/Dropbox/org/gradschool/grfp/personal.org" "~/Dropbox/org/gradschool/grfp/proposal.org" "~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org")))
- '(org-babel-load-languages (quote ((emacs-lisp . t) (shell . t) (python . t))))
+   '("~/Dropbox/org/mskcc/f1_mice.org" "~/Dropbox/org/gradschool/grfp/personal.org" "~/Dropbox/org/gradschool/grfp/proposal.org" "~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org"))
+ '(org-babel-load-languages '((emacs-lisp . t) (shell . t) (python . t)))
  '(org-format-latex-options
-   (quote
-    (:foreground default :background default :scale 1.5 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
-                 ("begin" "$1" "$" "$$" "\\(" "\\["))))
- '(org-noter-notes-search-path (quote ("~/Dropbox/org/")))
- '(package-selected-packages
-   (quote
-    (poly-org polymode org-drill iedit js2-mode irony-eldoc company-irony irony helm-bibtexkey org-ref org-noter pdf-tools let-alist ## tablist eterm-256color all-the-icons doom-themes smart-mode-line solarized-theme treemacs-persp treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs eglot-jl eglot julia-repl julia-mode helm-projectile projectile helm-swoop conda evil-surround helm-ls-git elpy counsel f ivy markdown-mode ein yasnippet-snippets auctex magit parinfer lispy paredit ace-window nord-theme zenburn-theme use-package helm evil cider)))
- '(pdf-tools-enabled-hook nil))
+   '(:foreground default :background default :scale 1.5 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
+                 ("begin" "$1" "$" "$$" "\\(" "\\[")))
+ '(org-noter-notes-search-path '("~/Dropbox/org/"))
+ '(pdf-tools-enabled-hook nil)
+ '(pdf-view-midnight-colors (cons "#383a42" "#fafafa"))
+ '(rustic-ansi-faces
+   ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])
+ '(tool-bar-mode nil)
+ '(vc-annotate-background "#fafafa")
+ '(vc-annotate-color-map
+   (list
+    (cons 20 "#50a14f")
+    (cons 40 "#688e35")
+    (cons 60 "#807b1b")
+    (cons 80 "#986801")
+    (cons 100 "#ae7118")
+    (cons 120 "#c37b30")
+    (cons 140 "#da8548")
+    (cons 160 "#c86566")
+    (cons 180 "#b74585")
+    (cons 200 "#a626a4")
+    (cons 220 "#ba3685")
+    (cons 240 "#cf4667")
+    (cons 260 "#e45649")
+    (cons 280 "#d2685f")
+    (cons 300 "#c07b76")
+    (cons 320 "#ae8d8d")
+    (cons 340 "#383a42")
+    (cons 360 "#383a42")))
+ '(vc-annotate-very-old-color nil))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:family "Fira Code" :foundry "CTDB" :slant normal :weight semi-bold :height 143 :width normal)))))
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
@@ -417,3 +469,4 @@ There are two things you can do about this warning:
 
 (put 'upcase-region 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
