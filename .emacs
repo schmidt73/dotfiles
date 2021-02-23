@@ -552,5 +552,7 @@ There are two things you can do about this warning:
 (setq tab-width 4)
 (setq-default indent-tabs-mode nil) ; indent spaces
 
+(setq vc-follow-symlinks t) ; follow symlinks to actual file
+
 ;; Fixes bug when opening Java files...
 (add-to-list 'auto-mode-alist '("\\.java\\'"))
