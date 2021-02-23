@@ -1,3 +1,88 @@
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(ansi-color-names-vector
+   ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])
+ '(custom-safe-themes
+   '("ff3c57a5049010a76de8949ddb629d29e2ced42b06098e046def291989a4104a" "7a994c16aa550678846e82edc8c9d6a7d39cc6564baaaacc305a3fdc0bd8725f" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "dde8c620311ea241c0b490af8e6f570fdd3b941d7bc209e55cd87884eb733b0e" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "9b01a258b57067426cc3c8155330b0381ae0d8dd41d5345b5eddac69f40d409b" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "632694fd8a835e85bcc8b7bb5c1df1a0164689bc6009864faed38a9142b97057" "e2acbf379aa541e07373395b977a99c878c30f20c3761aac23e9223345526bcc" default))
+ '(elpy-shell-command-prefix-key "C-c C-e")
+ '(elpy-syntax-check-command "flake8 --ignore E30")
+ '(evil-undo-system 'undo-tree)
+ '(fci-rule-color "#383a42")
+ '(jdee-db-active-breakpoint-face-colors (cons "#f0f0f0" "#4078f2"))
+ '(jdee-db-requested-breakpoint-face-colors (cons "#f0f0f0" "#50a14f"))
+ '(jdee-db-spec-breakpoint-face-colors (cons "#f0f0f0" "#9ca0a4"))
+ '(objed-cursor-color "#e45649")
+ '(org-agenda-files
+   '("~/Dropbox/org/mskcc/f1_mice.org" "~/Dropbox/org/gradschool/grfp/personal.org" "~/Dropbox/org/gradschool/grfp/proposal.org" "~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org"))
+ '(org-babel-load-languages '((emacs-lisp . t) (shell . t) (python . t)))
+ '(org-format-latex-options
+   '(:foreground default :background default :scale 1.5 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
+                 ("begin" "$1" "$" "$$" "\\(" "\\[")))
+ '(org-noter-notes-search-path '("~/Dropbox/org/"))
+ '(package-selected-packages
+   '(poly-R ess-r-mode ess iedit raku-mode ein yasnippet-snippets all-the-icons company-irony irony elpy julia-repl julia-mode js2-mode cider shackle helm-swoop poly-org polymode org-noter org-ref helm-bibtex markdown-mode yasnippet auctex parinfer evil-surround undo-tree smart-mode-line treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs company helm-projectile projectile doom-themes ace-window use-package))
+ '(pdf-tools-enabled-hook nil)
+ '(pdf-view-midnight-colors (cons "#383a42" "#fafafa"))
+ '(raku-exec-path "rakudo")
+ '(rustic-ansi-faces
+   ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])
+ '(tool-bar-mode nil)
+ '(vc-annotate-background "#fafafa")
+ '(vc-annotate-color-map
+   (list
+    (cons 20 "#50a14f")
+    (cons 40 "#688e35")
+    (cons 60 "#807b1b")
+    (cons 80 "#986801")
+    (cons 100 "#ae7118")
+    (cons 120 "#c37b30")
+    (cons 140 "#da8548")
+    (cons 160 "#c86566")
+    (cons 180 "#b74585")
+    (cons 200 "#a626a4")
+    (cons 220 "#ba3685")
+    (cons 240 "#cf4667")
+    (cons 260 "#e45649")
+    (cons 280 "#d2685f")
+    (cons 300 "#c07b76")
+    (cons 320 "#ae8d8d")
+    (cons 340 "#383a42")
+    (cons 360 "#383a42")))
+ '(vc-annotate-very-old-color nil))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(default ((t (:family "Fira Code" :foundry "CTDB" :slant normal :weight semi-bold :height 143 :width normal)))))
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ 
+;; custom-set-faces was added by Custom.
+;; If you edit it by hand, you could mess it up, so be careful.
+;; Your init file should contain only one such instance.
+;; If there is more than one, they won't work right.
+
+
+(put 'upcase-region 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
+(put 'downcase-region 'disabled nil)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;             EMACS PACKAGE MANGER CONFIGURATION       ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,7 +125,7 @@ There are two things you can do about this warning:
   :config
   (setq doom-themes-enable-bold t
         doom-themes-enable-italic t)
-  (load-theme 'doom-tomorrow-day)
+  (load-theme 'doom-homage-white)
   (doom-themes-treemacs-config)
   (doom-themes-visual-bell-config))
 
@@ -60,7 +145,7 @@ There are two things you can do about this warning:
   :ensure t
   :bind* (("M-/" . company-complete))
   :config
-  (setq company-idle-delay 0)
+  (setq company-idle-delay 0.1)
   (global-company-mode))
 
 (use-package treemacs
@@ -99,7 +184,9 @@ There are two things you can do about this warning:
   (sml/setup 'respectful))
 
 (use-package undo-tree
-  :ensure t)
+  :ensure t
+  :config
+  (global-undo-tree-mode))
 
 (use-package evil
   :ensure t
@@ -145,6 +232,8 @@ There are two things you can do about this warning:
 
 (use-package tex
   :ensure auctex
+  :bind
+  (("C-c [" . helm-bibtex-with-local-bibliography))
   :config
   (setq TeX-view-program-list '(("Evince" "evince --page-index=%(outpage) %o")))
   (setq TeX-view-program-selection '((output-pdf "Evince")))
@@ -218,9 +307,6 @@ There are two things you can do about this warning:
   (setq org-noter-notes-search-path '("~/Dropbox/org/ref/notes.org"))
   (setq org-noter-auto-save-last-location t))
 
-(use-package polymode
-  :ensure t)
-
 (use-package poly-org
   :ensure t)
 
@@ -235,10 +321,8 @@ There are two things you can do about this warning:
   :bind (("M-x" . helm-M-x)
          ("C-x C-f" . helm-find-files)
          ("C-x C-g" . helm-browse-project)
-         ("C-x b" . helm-mini))
-  :config
-  (helm-mode 1)
-  (add-to-list 'helm-completing-read-handlers-alist '(reftex-citation . nil)))
+         ("C-x b" . helm-mini)
+         ("C-c h" . helm-apropos)))
 
 (use-package helm-swoop
   :ensure t
@@ -317,6 +401,10 @@ There are two things you can do about this warning:
                 :buffer "*helm select python environment to activate*")))
     (pyvenv-activate selection)))
 
+;; Perl CONFIG
+(use-package raku-mode
+  :ensure t)
+
 ;; C/C++ CONFIG
 (use-package irony
   :ensure t
@@ -331,8 +419,85 @@ There are two things you can do about this warning:
   (eval-after-load 'company
     '(add-to-list 'company-backends 'company-irony)))
 
-
 (setq c-basic-offset 4)
+
+;; R CONFIG
+
+(use-package polymode
+  :ensure t)
+
+(use-package poly-R
+  :ensure t
+  :mode (("\\.Rmd\\'" . poly-markdown+r-mode)
+         ("\\.Rmarkdown\\'" . poly-markdown+r-mode)))
+
+(use-package ess
+  :ensure t
+  :bind (("C-c d" . ess-help)))
+
+;; shell CONFIG
+
+;;;; Sets up Polymode for Shell
+
+(defun poly-shell-eval-region (beg end msg)
+  (let ((proc (get-process "shell"))
+        pbuf command)
+    (unless proc
+      (let ((currbuff (current-buffer)))
+        (shell)
+        (switch-to-buffer currbuff)
+        (setq proc (get-process "shell"))))
+        
+    (setq pbuff (process-buffer proc))
+    (setq command (concat (buffer-substring beg end) "\n"))
+    (with-current-buffer pbuff
+      (goto-char (process-mark proc))
+      (insert command)
+      (move-marker (process-mark proc) (point)))
+       ;;pop-to-buffer does not work with save-current-buffer -- bug?
+    (process-send-string  proc command)
+    (display-buffer (process-buffer proc) t)))
+
+(defun poly-shell-mode-setup ()
+  (setq-local polymode-eval-region-function #'poly-shell-eval-region))
+
+(add-hook 'sh-mode-hook #'poly-shell-mode-setup)
+
+(defun sh-send-line-or-region (&optional step)
+  (interactive ())
+  (let ((proc (get-process "shell"))
+        pbuf min max command)
+    (unless proc
+      (let ((currbuff (current-buffer)))
+        (shell)
+        (switch-to-buffer currbuff)
+        (setq proc (get-process "shell"))))
+        
+    (setq pbuff (process-buffer proc))
+    (if (use-region-p)
+        (setq min (region-beginning)
+              max (region-end))
+      (setq min (point-at-bol)
+            max (point-at-eol)))
+    (setq command (concat (buffer-substring min max) "\n"))
+    (with-current-buffer pbuff
+      (goto-char (process-mark proc))
+      (insert command)
+      (move-marker (process-mark proc) (point)))
+       ;;pop-to-buffer does not work with save-current-buffer -- bug?
+    (process-send-string  proc command)
+    (display-buffer (process-buffer proc) t)
+    (when step 
+      (goto-char max)
+      (next-line))))
+
+(defun sh-send-line-or-region-and-step ()
+  (interactive)
+  (sh-send-line-or-region t))
+
+(defun sh-switch-to-process-buffer ()
+  (interactive)
+  (pop-to-buffer (process-buffer (get-process "shell")) t))
 
 ;; Font config
 (use-package ligature
@@ -389,84 +554,3 @@ There are two things you can do about this warning:
 
 ;; Fixes bug when opening Java files...
 (add-to-list 'auto-mode-alist '("\\.java\\'"))
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(ansi-color-names-vector
-   ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])
- '(custom-safe-themes
-   '("7a994c16aa550678846e82edc8c9d6a7d39cc6564baaaacc305a3fdc0bd8725f" "99ea831ca79a916f1bd789de366b639d09811501e8c092c85b2cb7d697777f93" "dde8c620311ea241c0b490af8e6f570fdd3b941d7bc209e55cd87884eb733b0e" "e074be1c799b509f52870ee596a5977b519f6d269455b84ed998666cf6fc802a" "9b01a258b57067426cc3c8155330b0381ae0d8dd41d5345b5eddac69f40d409b" "c74e83f8aa4c78a121b52146eadb792c9facc5b1f02c917e3dbb454fca931223" "632694fd8a835e85bcc8b7bb5c1df1a0164689bc6009864faed38a9142b97057" "e2acbf379aa541e07373395b977a99c878c30f20c3761aac23e9223345526bcc" default))
- '(elpy-shell-command-prefix-key "C-c C-e")
- '(elpy-syntax-check-command "flake8 --ignore E30")
- '(fci-rule-color "#383a42")
- '(jdee-db-active-breakpoint-face-colors (cons "#f0f0f0" "#4078f2"))
- '(jdee-db-requested-breakpoint-face-colors (cons "#f0f0f0" "#50a14f"))
- '(jdee-db-spec-breakpoint-face-colors (cons "#f0f0f0" "#9ca0a4"))
- '(objed-cursor-color "#e45649")
- '(org-agenda-files
-   '("~/Dropbox/org/mskcc/f1_mice.org" "~/Dropbox/org/gradschool/grfp/personal.org" "~/Dropbox/org/gradschool/grfp/proposal.org" "~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org"))
- '(org-babel-load-languages '((emacs-lisp . t) (shell . t) (python . t)))
- '(org-format-latex-options
-   '(:foreground default :background default :scale 1.5 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
-                 ("begin" "$1" "$" "$$" "\\(" "\\[")))
- '(org-noter-notes-search-path '("~/Dropbox/org/"))
- '(pdf-tools-enabled-hook nil)
- '(pdf-view-midnight-colors (cons "#383a42" "#fafafa"))
- '(rustic-ansi-faces
-   ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])
- '(tool-bar-mode nil)
- '(vc-annotate-background "#fafafa")
- '(vc-annotate-color-map
-   (list
-    (cons 20 "#50a14f")
-    (cons 40 "#688e35")
-    (cons 60 "#807b1b")
-    (cons 80 "#986801")
-    (cons 100 "#ae7118")
-    (cons 120 "#c37b30")
-    (cons 140 "#da8548")
-    (cons 160 "#c86566")
-    (cons 180 "#b74585")
-    (cons 200 "#a626a4")
-    (cons 220 "#ba3685")
-    (cons 240 "#cf4667")
-    (cons 260 "#e45649")
-    (cons 280 "#d2685f")
-    (cons 300 "#c07b76")
-    (cons 320 "#ae8d8d")
-    (cons 340 "#383a42")
-    (cons 360 "#383a42")))
- '(vc-annotate-very-old-color nil))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(default ((t (:family "Fira Code" :foundry "CTDB" :slant normal :weight semi-bold :height 143 :width normal)))))
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- 
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- 
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- 
-;; custom-set-faces was added by Custom.
-;; If you edit it by hand, you could mess it up, so be careful.
-;; Your init file should contain only one such instance.
-;; If there is more than one, they won't work right.
-
-
-(put 'upcase-region 'disabled nil)
-(put 'narrow-to-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
