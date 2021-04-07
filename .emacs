@@ -16,19 +16,20 @@
  '(jdee-db-spec-breakpoint-face-colors (cons "#f0f0f0" "#9ca0a4"))
  '(objed-cursor-color "#e45649")
  '(org-agenda-files
-   '("~/Dropbox/org/mskcc/f1_mice.org" "~/Dropbox/org/gradschool/grfp/personal.org" "~/Dropbox/org/gradschool/grfp/proposal.org" "~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org"))
+   '("~/Dropbox/org/mskcc/base-editing/starting_off.org" "~/Dropbox/org/mskcc/guidescan/lib_design.org" "~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org"))
  '(org-babel-load-languages '((emacs-lisp . t) (shell . t) (python . t)))
  '(org-format-latex-options
-   '(:foreground default :background default :scale 1.5 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
+   '(:foreground default :background default :scale 1.95 :html-foreground "Black" :html-background "Transparent" :html-scale 1.0 :matchers
                  ("begin" "$1" "$" "$$" "\\(" "\\[")))
  '(org-noter-notes-search-path '("~/Dropbox/org/"))
  '(package-selected-packages
-   '(poly-R ess-r-mode ess iedit raku-mode ein yasnippet-snippets all-the-icons company-irony irony elpy julia-repl julia-mode js2-mode cider shackle helm-swoop poly-org polymode org-noter org-ref helm-bibtex markdown-mode yasnippet auctex parinfer evil-surround undo-tree smart-mode-line treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs company helm-projectile projectile doom-themes ace-window use-package))
+   '(cdlatex poly-R ess-r-mode ess iedit raku-mode ein yasnippet-snippets all-the-icons company-irony irony elpy julia-repl julia-mode js2-mode cider shackle helm-swoop poly-org polymode org-noter org-ref helm-bibtex markdown-mode yasnippet auctex parinfer evil-surround undo-tree smart-mode-line treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs company helm-projectile projectile doom-themes ace-window use-package))
  '(pdf-tools-enabled-hook nil)
  '(pdf-view-midnight-colors (cons "#383a42" "#fafafa"))
  '(raku-exec-path "rakudo")
  '(rustic-ansi-faces
    ["#fafafa" "#e45649" "#50a14f" "#986801" "#4078f2" "#a626a4" "#0184bc" "#383a42"])
+ '(tab-width 4)
  '(tool-bar-mode nil)
  '(vc-annotate-background "#fafafa")
  '(vc-annotate-color-map
@@ -115,6 +116,9 @@ There are two things you can do about this warning:
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(use-package hydra
+  :ensure t)
 
 (use-package ace-window
   :ensure t
@@ -230,15 +234,33 @@ There are two things you can do about this warning:
     (add-hook 'scheme-mode-hook #'parinfer-mode)
     (add-hook 'lisp-mode-hook #'parinfer-mode)))
 
-(use-package tex
+(use-package tex-site
   :ensure auctex
-  :bind
-  (("C-c [" . helm-bibtex-with-local-bibliography))
   :config
   (setq TeX-view-program-list '(("Evince" "evince --page-index=%(outpage) %o")))
   (setq TeX-view-program-selection '((output-pdf "Evince")))
   (setq TeX-source-correlate-start-server t)
-  (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode))
+  (setenv "PATH" (concat (getenv "PATH") ":/usr/local/texlive/2021/bin/x86_64-linux/"))
+  (setq exec-path (append exec-path '("/usr/local/texlive/2021/bin/x86_64-linux/")))
+  (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
+  (add-hook 'LaTeX-mode-hook (lambda () (define-key LaTeX-mode-map (kbd "C-c C-c") 'hydra-tex-menu/body)))
+  (defhydra hydra-tex-menu (:color blue)
+    "
+^Compile^             ^References^        ^Editing^               ^Marking^
+^^^^^^^^^^^^^^^^-------------------------------------------------------------------
+_c_: compile         _r_: reference      _m_: insert macro        _._: mark environment
+_a_: compile-all     _i_: citation       _e_: create environment  _*_: mark section
+^ ^                  ^ ^                 _f_: close environment   ^ ^
+"
+    ("i" helm-bibtex-with-local-bibliography)
+    ("r" reftex-reference)
+    ("m" TeX-insert-macro)
+    ("c" TeX-command-master)
+    ("e" LaTeX-environment)
+    ("f" LaTeX-close-environment)
+    ("a" TeX-command-run-all)
+    ("." LaTeX-mark-environment)
+    ("*" LaTeX-mark-section)))
 
 (use-package yasnippet
   :ensure t
@@ -275,6 +297,7 @@ There are two things you can do about this warning:
   (setq org-hide-leading-stars t)
   (setq org-todo-keywords
         (quote ((sequence "TODO(t)" "INPROGRESS(p)" "|" "DONE(d!)"))))
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.95))
   (setq org-todo-keyword-faces
         (quote (("TODO" :foreground "red" :weight bold)
                 ("CANCELLED" :foreground "blue" :weight bold)
@@ -298,7 +321,17 @@ There are two things you can do about this warning:
   (setq org-ref-bibliography-notes "~/Dropbox/org/ref/notes.org"
         org-ref-default-bibliography '("~/Dropbox/org/ref/master.bib")
         org-ref-pdf-directory "~/Dropbox/org/ref/pdfs/")
-  (setq org-ref-open-pdf-function 'org-ref-open-pdf-at-point))
+  (setq org-ref-open-pdf-function 'org-ref-open-pdf-at-point)
+  (defun org-ref-open-pdf-at-point ()
+    "Open the pdf for bibtex key under point if it exists."
+    (interactive)
+    (let* ((results (org-ref-get-bibtex-key-and-file))
+           (key (car results))
+           (pdf-file (funcall org-ref-get-pdf-filename-function key)))
+      (if (file-exists-p pdf-file)
+          (call-process-shell-command (concat "okular " pdf-file "&") nil 0)
+        (message "no pdf found for %s" key))))
+  (bind-key "C-c g" 'org-ref-google-scholar-at-point org-mode-map))
 
 (use-package org-noter
   :ensure t
@@ -322,7 +355,9 @@ There are two things you can do about this warning:
          ("C-x C-f" . helm-find-files)
          ("C-x C-g" . helm-browse-project)
          ("C-x b" . helm-mini)
-         ("C-c h" . helm-apropos)))
+         ("C-c h" . helm-apropos))
+  :config
+  (helm-mode))
 
 (use-package helm-swoop
   :ensure t
@@ -422,7 +457,6 @@ There are two things you can do about this warning:
 (setq c-basic-offset 4)
 
 ;; R CONFIG
-
 (use-package polymode
   :ensure t)
 
