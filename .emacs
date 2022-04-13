@@ -14,6 +14,7 @@
  '(jdee-db-active-breakpoint-face-colors (cons "#f0f0f0" "#4078f2"))
  '(jdee-db-requested-breakpoint-face-colors (cons "#f0f0f0" "#50a14f"))
  '(jdee-db-spec-breakpoint-face-colors (cons "#f0f0f0" "#9ca0a4"))
+ '(lsp-pyright-venv-path "")
  '(objed-cursor-color "#e45649")
  '(org-agenda-files
    '("~/Dropbox/org/mskcc/base-editing/starting_off.org" "~/Dropbox/org/mskcc/guidescan/lib_design.org" "~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org"))
@@ -23,7 +24,7 @@
                  ("begin" "$1" "$" "$$" "\\(" "\\[")))
  '(org-noter-notes-search-path '("~/Dropbox/org/"))
  '(package-selected-packages
-   '(cdlatex poly-R ess-r-mode ess iedit raku-mode ein yasnippet-snippets all-the-icons company-irony irony elpy julia-repl julia-mode js2-mode cider shackle helm-swoop poly-org polymode org-noter org-ref helm-bibtex markdown-mode yasnippet auctex parinfer evil-surround undo-tree smart-mode-line treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs company helm-projectile projectile doom-themes ace-window use-package))
+   '(snakemake-mode julia-snail vterm helm-ag lsp-java sly slime helm-lsp lsp-ui dash lsp-pyright lsp-jedi which-key lsp-mode helm-c-yasnippet cdlatex poly-R ess-r-mode ess iedit raku-mode ein yasnippet-snippets all-the-icons company-irony irony elpy julia-repl julia-mode js2-mode cider shackle helm-swoop poly-org polymode org-noter org-ref helm-bibtex markdown-mode yasnippet auctex parinfer evil-surround undo-tree smart-mode-line treemacs-magit treemacs-icons-dired treemacs-projectile treemacs-evil treemacs company helm-projectile projectile doom-themes ace-window use-package))
  '(pdf-tools-enabled-hook nil)
  '(pdf-view-midnight-colors (cons "#383a42" "#fafafa"))
  '(raku-exec-path "rakudo")
@@ -234,12 +235,20 @@ There are two things you can do about this warning:
     (add-hook 'scheme-mode-hook #'parinfer-mode)
     (add-hook 'lisp-mode-hook #'parinfer-mode)))
 
+(use-package helm-c-yasnippet
+  :ensure t
+  :config
+  (setq helm-yas-space-match-any-greedy t))
+
+(setq LaTeX-command-style '(("" "%(PDF)%(latex) -shell-escape %S%(PDFout)")))
+
 (use-package tex-site
   :ensure auctex
   :config
   (setq TeX-view-program-list '(("Evince" "evince --page-index=%(outpage) %o")))
   (setq TeX-view-program-selection '((output-pdf "Evince")))
   (setq TeX-source-correlate-start-server t)
+  (setq reftex-ref-style "\\ref") ; choose default reftex option
   (setenv "PATH" (concat (getenv "PATH") ":/usr/local/texlive/2021/bin/x86_64-linux/"))
   (setq exec-path (append exec-path '("/usr/local/texlive/2021/bin/x86_64-linux/")))
   (add-hook 'LaTeX-mode-hook 'TeX-source-correlate-mode)
@@ -251,14 +260,16 @@ There are two things you can do about this warning:
 _c_: compile         _r_: reference      _m_: insert macro        _._: mark environment
 _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark section
 ^ ^                  ^ ^                 _f_: close environment   ^ ^
+^ ^                  ^ ^                 _s_: insert yasnipppet   ^ ^
 "
     ("i" helm-bibtex-with-local-bibliography)
-    ("r" reftex-reference)
+    ("r" (reftex-reference " "))
     ("m" TeX-insert-macro)
     ("c" TeX-command-master)
     ("e" LaTeX-environment)
     ("f" LaTeX-close-environment)
     ("a" TeX-command-run-all)
+    ("s" helm-c-yas-complete)
     ("." LaTeX-mark-environment)
     ("*" LaTeX-mark-section)))
 
@@ -284,8 +295,8 @@ _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark sect
   :bind (("C-c a" . org-agenda))
   :config
   (setq org-capture-templates
-        '(("c" "Citation" plain (file "~/Dropbox/org/ref/master.bib")
-           "\n%x\n")))
+        '(("c" "Citation" plain (file "~/Dropbox/org/ref/master.bib") "\n%x\n")
+          ("i" "Idea" entry (file "~/Desktop/Princeton/Raphael/ideas.org") "* %?\n%t")))
   (setq org-agenda-files '("~/Dropbox/org/mskcc/days.org" "~/Dropbox/org/ref/notes.org"))
   (setq org-latex-create-formula-image-program 'dvipng)
   (setq org-latex-pdf-process
@@ -309,7 +320,7 @@ _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark sect
   :config
   (setq bibtex-completion-pdf-open-function
         (lambda (fpath)
-          (async-shell-command (concat "okular " fpath))))
+          (call-process-shell-command (concat "okular " fpath "&") nil 0)))
   (setq bibtex-completion-bibliography
       '("~/Dropbox/org/ref/master.bib"))
   (setq bibtex-completion-library-path
@@ -394,36 +405,17 @@ _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark sect
   (setq js2-basic-offset 2))
 
 ;;;; Julia CONFIG
-(use-package julia-mode
+(use-package julia-snail
   :ensure t
+  :hook (julia-mode . julia-snail-mode)
   :config
-  (add-hook 'julia-mode-hook 'julia-repl-mode)
-  (setenv "PATH" (concat (getenv "PATH") ":/opt/julia-1.4.2/bin"))
-  (setq exec-path (append exec-path '("/opt/julia-1.4.2/bin"))))
-
-(use-package julia-repl
-  :ensure t)
-
-(defun julia-strip-repl-response (raw-response line)
-  (substring raw-response
-             (length line)
-             (- (length raw-response) (length "julia> "))))
-
-(defun julia-repl-send-line-and-read (line)
-  (with-current-buffer (julia-repl-inferior-buffer)
-    (let ((starting-pos (point)))
-      (term-send-raw-string line)
-      (term-send-raw-string "\t")
-      (sleep-for 0.5)
-      (let ((raw-response (buffer-substring-no-properties
-                           starting-pos (length (buffer-string)))))
-        (julia-strip-repl-response raw-response line)))))
+  (setq julia-snail-executable "/home/schmidt73/julia-1.6.5/bin/julia")) 
 
 ;; Python CONFIG
 (use-package elpy
   :ensure t
   :config
-  (elpy-enable)
+  ; (elpy-enable)
   (setq elpy-rpc-virtualenv-path 'current))
 
 (defun activate-python-environment ()
@@ -435,6 +427,33 @@ _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark sect
           (helm :sources (helm-build-sync-source "Select Python Environment" :candidates files)
                 :buffer "*helm select python environment to activate*")))
     (pyvenv-activate selection)))
+
+; REQUIRES dash.el 
+
+(use-package dash
+  :ensure t)
+
+(use-package lsp-mode
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+  :hook (
+         (python-mode . lsp)
+         (lsp-mode . lsp-enable-which-key-integration))
+  :commands lsp)
+
+(use-package lsp-ui :commands lsp-ui-mode)
+(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+
+(use-package lsp-pyright
+  :ensure t
+  :hook (python-mode . (lambda ()
+                          (require 'lsp-pyright)
+                          (lsp))))  ; or lsp-deferred
+
+;; optional if you want which-key integration
+(use-package which-key
+  :config
+  (which-key-mode))
 
 ;; Perl CONFIG
 (use-package raku-mode
@@ -455,6 +474,7 @@ _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark sect
     '(add-to-list 'company-backends 'company-irony)))
 
 (setq c-basic-offset 4)
+
 
 ;; R CONFIG
 (use-package polymode
@@ -553,7 +573,7 @@ _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark sect
 ;;;; BLOG CONFIG
 (defun new-blog-post (name)
   (interactive "MPost name: ")
-  (let* ((posts-dir "/home/schmidt73/Desktop/blog/_posts/")
+  (let* ((posts-dir "/home/schmidt73/Dropbox/blog/_posts/")
          (post-file (concat posts-dir (format-time-string "%Y-%m-%d") "-" name ".markdown")))
     (find-file post-file)
     (insert "new-blog-post")
@@ -561,6 +581,7 @@ _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark sect
 
 ;;;; General CONFIG
 (server-start)
+(setq inferior-lisp-program "sbcl")
 
 (eval-after-load "dired"
   '(progn
@@ -587,6 +608,7 @@ _a_: compile-all     _i_: citation       _e_: create environment  _*_: mark sect
 (setq-default indent-tabs-mode nil) ; indent spaces
 
 (setq vc-follow-symlinks t) ; follow symlinks to actual file
+;; (add-hook 'java-mode-hook #'lsp)
 
 ;; Fixes bug when opening Java files...
-(add-to-list 'auto-mode-alist '("\\.java\\'"))
+;; (add-to-list 'auto-mode-alist '("\\.java\\'"))
